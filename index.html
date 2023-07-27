@@ -12,9 +12,49 @@
   <button id="open">连接蓝牙</button>
   <button id="send">发送数据</button>
 
-  <script type="modules">
-    import { blueTooth } from './blueTooth';
-    
+  <script src="./blueTooth.js"></script>
+  <script>
+    let ble;
+
+    document.getElementById("open").onclick = async function () {
+      // 初始化，记得进行修改填上自己的参数
+      ble = new BlueTooth(
+        {
+          filters: { acceptAllDevices: true, },
+          serverID: "battery_level ",
+          readID: "readID",
+          sendID: "sendID",
+          disconnected: () => { },
+          handleNotifications: () => { }
+        }
+      );
+
+      try {
+        // 开始连接
+        await ble.onConnect(); // 连接方法，点击之后触发连接弹框，请自行选择蓝牙
+        console.log("连接完成");
+
+        await ble.onServer(); // 选择完毕后 连接对应的服务
+        console.log("服务连接完成");
+
+        await ble.onRead(); // 服务连接成功后 监听需要的特征值
+        console.log("监听完成");
+      } catch (err) {
+        console.error("error: ", err);
+      }
+    };
+
+    document.getElementById("send").onclick = async function () {
+      try {
+        let str = await ble.onSendInfo("0B000000"); // 发送16进制字符串 循环三次直到有返回值
+        // let str = await ble.SendInfoFn("0B000000"); // 发送16进制字符串 并接受返回值
+        // await ble.onSend("0B000000"); // 发送16进制字符串
+        console.log(str);
+      } catch (err) {
+        console.error("error: ", err);
+      }
+    };
+
   </script>
 </body>
 
